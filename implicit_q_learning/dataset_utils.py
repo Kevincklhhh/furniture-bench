@@ -254,14 +254,42 @@ class FurnitureDataset(Dataset):
 class ReplayBuffer(Dataset):
 
     def __init__(self, observation_space: gym.spaces.Box, action_dim: int, capacity: int):
-
-        observations = np.empty((capacity, *observation_space.shape), dtype=observation_space.dtype)
+        
+#        print(type(observation_space))
+#        for space_name, space in observation_space.spaces.items():
+#            print(f"{space_name} dtype: {space.dtype}")
+#        print(capacity)
+#        print(*observation_space.shape)
+#        print(capacity)
+        observations = np.empty((capacity, *observation_space.shape), dtype=observation_space.dtype)  #dtype=observation_space.dtype
+#        observations = np.empty((capacity, (14,), (2048,),(2048,)), dtype=np.float32)  #dtype=observation_space.dtype
+        # self.observations={}
+        # self.next_observations={}
+        # if isinstance(observation_space, gym.spaces.Dict):
+        #     for key, space in observation_space.spaces.items():
+        #         if isinstance(space, gym.spaces.Box):
+        #             self.observations[key] = np.empty((capacity, *space.shape), dtype=space.dtype)
+        #             self.next_observations[key] = np.empty((capacity, *space.shape), dtype=space.dtype)
+        # else:
+        #     raise ValueError("Observation space must be a gym.spaces.Dict type")
+        # observations=self.observations
+        # next_observations=self.next_observations
+#        observations = np.empty((capacity, 'robot_state':(14,),
+#                                            'image1':(2048,),
+#                                            'image2':(2048,)}), dtype=observation_space.dtype)  #dtype=observation_space.dtype
         actions = np.empty((capacity, action_dim), dtype=np.float32)
         rewards = np.empty((capacity, ), dtype=np.float32)
         masks = np.empty((capacity, ), dtype=np.float32)
         dones_float = np.empty((capacity, ), dtype=np.float32)
         next_observations = np.empty((capacity, *observation_space.shape),
                                      dtype=observation_space.dtype)
+        
+#        next_observations = np.empty((capacity, {'robot_state':(14,),
+#                                            'image1':(2048,),
+#                                            'image2':(2048,)}),
+#                                     dtype=observation_space.dtype)
+        
+
         super().__init__(
             observations=observations,
             actions=actions,

@@ -1,3 +1,4 @@
+import isaacgym
 import os
 from typing import Tuple
 
@@ -29,9 +30,12 @@ flags.DEFINE_integer('replay_buffer_size', 2000000,
                      'Replay buffer size (=max_steps if unspecified).')
 flags.DEFINE_integer('init_dataset_size', None, 'Offline data size (uses all data if unspecified).')
 flags.DEFINE_boolean('tqdm', True, 'Use tqdm progress bar.')
-flags.DEFINE_boolean('wandb', True, 'Use wandb')
-flags.DEFINE_STRING('wandb_project', 'furniture-bench', 'wandb project')
-flags.DEFINE_STRING('wandb_entity', 'clvr', 'wandb entity')
+flags.DEFINE_boolean('wandb', False, 'Use wandb')
+flags.DEFINE_string("data_path", '', "Path to data.") 
+flags.DEFINE_boolean("use_encoder", False, "Use ResNet18 for the image encoder.")
+flags.DEFINE_string("trained_encoder", "r3m", "Use r3m for the image encoder.")
+#flags.DEFINE_STRING('wandb_project', 'furniture-bench', 'wandb project')
+#flags.DEFINE_STRING('wandb_entity', 'clvr', 'wandb entity')
 config_flags.DEFINE_config_file('config',
                                 'configs/antmaze_finetune_config.py',
                                 'File path to the training hyperparameter configuration.',
@@ -66,7 +70,8 @@ def make_env_and_dataset(env_name: str, seed: int, data_path: str, use_encoder: 
                        furniture=furniture_name,
                        data_path=data_path,
                        use_encoder=use_encoder,
-                       trained_encoder=trained_encoder)
+                       trained_encoder=trained_encoder,
+                       encoder_type="r3m")
         # env = wrappers.Flatten(env)
     else:
         env = gym.make(env_name)
@@ -100,7 +105,7 @@ def make_env_and_dataset(env_name: str, seed: int, data_path: str, use_encoder: 
 def main(_):
     root_logdir = os.path.join(FLAGS.save_dir, 'tb', str(FLAGS.seed))
     os.makedirs(FLAGS.save_dir, exist_ok=True)
-
+    
     env, dataset = make_env_and_dataset(FLAGS.env_name, FLAGS.seed, FLAGS.data_path,
                                         FLAGS.use_encoder, FLAGS.trained_encoder)
 
