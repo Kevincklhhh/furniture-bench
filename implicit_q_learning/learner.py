@@ -113,6 +113,9 @@ class Learner(object):
         else:
             optimiser = optax.adam(learning_rate=actor_lr)
 
+        # print("actor_def", actor_def)
+        # print("actor_key", actor_key)
+        # print("observations", observations[0])
         actor = Model.create(actor_def, inputs=[actor_key, observations], tx=optimiser)
 
         critic_def = value_net.DoubleCritic(hidden_dims, use_encoder=use_encoder)
