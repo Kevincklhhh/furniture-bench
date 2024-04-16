@@ -1,4 +1,4 @@
-import isaacgym
+#import isaacgym
 import os
 from typing import Tuple
 
@@ -20,10 +20,10 @@ FLAGS = flags.FLAGS
 flags.DEFINE_string('env_name', 'halfcheetah-expert-v2', 'Environment name.')
 flags.DEFINE_string('save_dir', './tmp/', 'Tensorboard logging dir.')
 flags.DEFINE_integer('seed', 42, 'Random seed.')
-flags.DEFINE_integer('eval_episodes', 100, 'Number of episodes used for evaluation.')
+flags.DEFINE_integer('eval_episodes', 10, 'Number of episodes used for evaluation.')   # 100
 flags.DEFINE_integer('log_interval', 1000, 'Logging interval.')
-flags.DEFINE_integer('eval_interval', 100000, 'Eval interval.')
-flags.DEFINE_integer('batch_size', 256, 'Mini batch size.')
+flags.DEFINE_integer('eval_interval', 10000, 'Eval interval.')   # 100000
+flags.DEFINE_integer('batch_size', 8, 'Mini batch size.')   # 256
 flags.DEFINE_integer('max_steps', int(1e6), 'Number of training steps.')
 flags.DEFINE_integer('num_pretraining_steps', int(1e6), 'Number of pretraining steps.')
 flags.DEFINE_integer('replay_buffer_size', 2000000,
@@ -33,7 +33,10 @@ flags.DEFINE_boolean('tqdm', True, 'Use tqdm progress bar.')
 flags.DEFINE_boolean('wandb', False, 'Use wandb')
 flags.DEFINE_string("data_path", '', "Path to data.") 
 flags.DEFINE_boolean("use_encoder", False, "Use ResNet18 for the image encoder.")
-flags.DEFINE_string("trained_encoder", "r3m", "Use r3m for the image encoder.")
+flags.DEFINE_string("encoder_type", '', 'vip or r3m')   # flags.DEFINE_string("trained_encoder", "r3m", "Use r3m for the image encoder.")
+
+## STRING need to be un capitalized - Use DEFINE_string
+
 #flags.DEFINE_STRING('wandb_project', 'furniture-bench', 'wandb project')
 #flags.DEFINE_STRING('wandb_entity', 'clvr', 'wandb entity')
 config_flags.DEFINE_config_file('config',
@@ -107,10 +110,15 @@ def main(_):
     os.makedirs(FLAGS.save_dir, exist_ok=True)
     
     env, dataset = make_env_and_dataset(FLAGS.env_name, FLAGS.seed, FLAGS.data_path,
-                                        FLAGS.use_encoder, FLAGS.trained_encoder)
+                                        FLAGS.use_encoder, FLAGS.encoder_type)
 
 
     action_dim = env.action_space.shape[0]
+    print(dataset.observations[0])  
+    # for key, space in dataset.observations[0].items():
+    #     print(key, type(space), space.shape)
+    # for key, space in env.observation_space.items():
+    #     print(key, type(space), space.shape)
     replay_buffer = ReplayBuffer(env.observation_space, action_dim, FLAGS.replay_buffer_size
                                  or FLAGS.max_steps)
     replay_buffer.initialize_with_dataset(dataset, FLAGS.init_dataset_size)
@@ -126,9 +134,18 @@ def main(_):
 
     summary_writer = SummaryWriter(root_logdir, write_to_disk=True)
 
+    # agent = Learner(FLAGS.seed,
+    #                 env.observation_space.sample()[np.newaxis],
+    #                 env.action_space.sample()[np.newaxis], **kwargs)
+    
     agent = Learner(FLAGS.seed,
-                    env.observation_space.sample()[np.newaxis],
-                    env.action_space.sample()[np.newaxis], **kwargs)
+                    #env.observation_space.sample()[np.newaxis],
+                    env.observation_space.sample(),
+                    env.action_space.sample()[np.newaxis], 
+                    max_steps=FLAGS.max_steps,
+                    **kwargs,
+                    use_encoder=FLAGS.use_encoder)
+
 
     eval_returns = []
     observation, done = env.reset(), False

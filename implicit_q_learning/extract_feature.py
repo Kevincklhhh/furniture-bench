@@ -18,7 +18,7 @@ flags.DEFINE_boolean("use_r3m", False, "Use r3m to encode images.")
 flags.DEFINE_boolean("use_vip", False, "Use vip to encode images.")
 flags.DEFINE_integer("num_threads", int(8), "Set number of threads of PyTorch")
 flags.DEFINE_integer("num_demos", None, "Number of demos to convert")
-flags.DEFINE_integer('batch_size', 512, 'Batch size for encoding images')
+flags.DEFINE_integer('batch_size', 64, 'Batch size for encoding images')
 
 
 def main(_):
