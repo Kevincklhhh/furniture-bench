@@ -14,3 +14,8 @@
 - `implicit_q_learning/train_finetune.py`
 - `implicit_q_learning/train_offline.py`
 
+### Juicer scrpit modified python code in zip code
+- imitation-juicer/src/evaluate_model.py
+- imitation-juicer/src/config/*.yaml
+- imitation-juicer/src/train/bc.py
+- - imitation-juicer/src/train/continue_bc.py
