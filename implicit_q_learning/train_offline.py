@@ -1,3 +1,4 @@
+import isaacgym
 import os
 from typing import Tuple
 
@@ -24,7 +25,7 @@ flags.DEFINE_integer("eval_episodes", 10, "Number of episodes used for evaluatio
 flags.DEFINE_integer("log_interval", 1000, "Logging interval.")
 flags.DEFINE_integer("eval_interval", 5000000, "Eval interval.")
 flags.DEFINE_integer("ckpt_interval", 100000, "Ckpt interval.")
-flags.DEFINE_integer("batch_size", 256, "Mini batch size.")
+flags.DEFINE_integer("batch_size", 64, "Mini batch size.")
 flags.DEFINE_integer("max_steps", int(1e6), "Number of training steps.")
 flags.DEFINE_boolean("tqdm", True, "Use tqdm progress bar.")
 flags.DEFINE_string("data_path", '', "Path to data.")
