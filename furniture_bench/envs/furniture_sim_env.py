@@ -67,7 +67,7 @@ class FurnitureSimEnv(gym.Env):
         high_random_idx: int = 0,
         save_camera_input: bool = False,
         record: bool = False,
-        max_env_steps: int = 3000,
+        max_env_steps: int = 2000,
         act_rot_repr: str = "quat",
         **kwargs,
     ):

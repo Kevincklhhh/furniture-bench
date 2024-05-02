@@ -16,9 +16,9 @@ flags.DEFINE_string("demo_dir", "square_table_parts_state", "Demonstration dir."
 flags.DEFINE_string("out_file_path", None, "Path to save converted data.")
 flags.DEFINE_boolean("use_r3m", False, "Use r3m to encode images.")
 flags.DEFINE_boolean("use_vip", False, "Use vip to encode images.")
-flags.DEFINE_integer("num_threads", int(8), "Set number of threads of PyTorch")
+flags.DEFINE_integer("num_threads", int(4), "Set number of threads of PyTorch")
 flags.DEFINE_integer("num_demos", None, "Number of demos to convert")
-flags.DEFINE_integer('batch_size', 64, 'Batch size for encoding images')
+flags.DEFINE_integer('batch_size', 4, 'Batch size for encoding images')
 
 
 def main(_):
@@ -87,8 +87,8 @@ def main(_):
                 with torch.no_grad():
                     # Use batch size.
                     for i in range(0, l, FLAGS.batch_size):
-                        img1_feature[i:i+FLAGS.batch_size] = encoder(img1[i:i+FLAGS.batch_size].to(device).reshape(-1, 3, 224, 224)).cpu().detach().numpy()
-                        img2_feature[i:i+FLAGS.batch_size] = encoder(img2[i:i+FLAGS.batch_size].to(device).reshape(-1, 3, 224, 224)).cpu().detach().numpy()
+                        img1_feature[i:i+FLAGS.batch_size] = encoder(img1[i:i+FLAGS.batch_size].to(device).reshape(-1, 3, 224,224)).cpu().detach().numpy()   # reshape(-1, 3, 224, 224)
+                        img2_feature[i:i+FLAGS.batch_size] = encoder(img2[i:i+FLAGS.batch_size].to(device).reshape(-1, 3, 224,224)).cpu().detach().numpy()   # reshape(-1, 3, 224, 224)
 
             for i in range(l - 1):
                 if FLAGS.use_r3m or FLAGS.use_vip:

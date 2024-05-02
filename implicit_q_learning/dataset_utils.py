@@ -148,25 +148,27 @@ class Dataset(object):
                               dtype=jnp.float32)
                 },
             )
+        # print(self.observations)
+        
         return Batch(
             observations={
                 'image1':
-                jnp.array([self.observations[i]['image1'] for i in indx], dtype=jnp.float32),
+                jnp.array([self.observations['image1'][i] for i in indx], dtype=jnp.float32),    # [self.observations[i]['image1'] for i in indx], dtype=jnp.float32), 
                 'image2':
-                jnp.array([self.observations[i]['image2'] for i in indx], dtype=jnp.float32),
+                jnp.array([self.observations['image2'][i] for i in indx], dtype=jnp.float32),    # same
                 'robot_state':
-                jnp.array([self.observations[i]['robot_state'] for i in indx], dtype=jnp.float32)
+                jnp.array([self.observations['robot_state'][i] for i in indx], dtype=jnp.float32)
             },
             actions=self.actions[indx],
             rewards=self.rewards[indx],
             masks=self.masks[indx],
             next_observations={
                 'image1':
-                jnp.array([self.next_observations[i]['image1'] for i in indx], dtype=jnp.float32),
+                jnp.array([self.next_observations['image1'][i] for i in indx], dtype=jnp.float32),
                 'image2':
-                jnp.array([self.next_observations[i]['image2'] for i in indx], dtype=jnp.float32),
+                jnp.array([self.next_observations['image2'][i] for i in indx], dtype=jnp.float32),
                 'robot_state':
-                jnp.array([self.next_observations[i]['robot_state'] for i in indx],
+                jnp.array([self.next_observations['robot_state'][i] for i in indx],
                           dtype=jnp.float32)
             },
         )
@@ -380,7 +382,14 @@ class ReplayBuffer(Dataset):
         self.insert_index = 0
         self.capacity = capacity
 
-    def insert(self, observation: Dict[str, np.ndarray], action: np.ndarray, reward: float, mask: float, done_float: float, next_observation: Dict[str, np.ndarray]):
+    def insert(self, 
+               observation: Dict[str, np.ndarray], 
+               action: np.ndarray, 
+               reward: float, 
+               mask: float, 
+               done_float: float, 
+               next_observation: Dict[str, np.ndarray]):
+        
         for key in self.observations.keys():
             # print(key)
             # print(type(self.observations[key]), type(observation[key]))
@@ -388,7 +397,7 @@ class ReplayBuffer(Dataset):
             #print(observation[key])
             self.observations[key][self.insert_index] = observation[key]
             self.next_observations[key][self.insert_index] = next_observation[key]
-
+        # print(self.observations)
         self.actions[self.insert_index] = action
         self.rewards[self.insert_index] = reward
         self.masks[self.insert_index] = mask

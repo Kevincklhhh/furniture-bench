@@ -2,6 +2,9 @@
 import os
 from typing import Tuple
 
+import isaacgym
+from isaacgym import gymapi, gymtorch
+
 import gym
 import numpy as np
 import tqdm
@@ -18,14 +21,15 @@ from learner import Learner
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string('env_name', 'halfcheetah-expert-v2', 'Environment name.')
-flags.DEFINE_string('save_dir', './tmp/', 'Tensorboard logging dir.')
-flags.DEFINE_integer('seed', 42, 'Random seed.')
+flags.DEFINE_string('save_dir', './checkpoints/', 'Tensorboard logging dir.')
+flags.DEFINE_string("run_name", "lamp_sim", "Run specific name")
+flags.DEFINE_integer('seed', 44, 'Random seed.')
 flags.DEFINE_integer('eval_episodes', 10, 'Number of episodes used for evaluation.')   # 100
 flags.DEFINE_integer('log_interval', 1000, 'Logging interval.')
-flags.DEFINE_integer('eval_interval', 10000, 'Eval interval.')   # 100000
-flags.DEFINE_integer('batch_size', 8, 'Mini batch size.')   # 256
-flags.DEFINE_integer('max_steps', int(1e6), 'Number of training steps.')
-flags.DEFINE_integer('num_pretraining_steps', int(1e6), 'Number of pretraining steps.')
+flags.DEFINE_integer('eval_interval', 5000000, 'Eval interval.')   # 100000
+flags.DEFINE_integer('batch_size', 4, 'Mini batch size.')   # 256
+flags.DEFINE_integer('max_steps', int(50000), 'Number of training steps.')
+flags.DEFINE_integer('num_pretraining_steps', int(1*1e6), 'Number of pretraining steps.')
 flags.DEFINE_integer('replay_buffer_size', 2000000,
                      'Replay buffer size (=max_steps if unspecified).')
 flags.DEFINE_integer('init_dataset_size', None, 'Offline data size (uses all data if unspecified).')
@@ -33,7 +37,8 @@ flags.DEFINE_boolean('tqdm', True, 'Use tqdm progress bar.')
 flags.DEFINE_boolean('wandb', False, 'Use wandb')
 flags.DEFINE_string("data_path", '', "Path to data.") 
 flags.DEFINE_boolean("use_encoder", False, "Use ResNet18 for the image encoder.")
-flags.DEFINE_string("encoder_type", '', 'vip or r3m')   # flags.DEFINE_string("trained_encoder", "r3m", "Use r3m for the image encoder.")
+flags.DEFINE_string("encoder_type", '', 'vip or r3m')   
+#flags.DEFINE_string("trained_encoder", "r3m", "Use r3m for the image encoder.")
 
 ## STRING need to be un capitalized - Use DEFINE_string
 
@@ -113,8 +118,7 @@ def main(_):
                                         FLAGS.use_encoder, FLAGS.encoder_type)
 
 
-    action_dim = env.action_space.shape[0]
-    print(dataset.observations[0])  
+    action_dim = env.action_space.shape[1]
     # for key, space in dataset.observations[0].items():
     #     print(key, type(space), space.shape)
     # for key, space in env.observation_space.items():
@@ -146,6 +150,8 @@ def main(_):
                     **kwargs,
                     use_encoder=FLAGS.use_encoder)
 
+    #ckpt_dir = os.path.join(FLAGS.save_dir, "ckpt", f"{FLAGS.run_name}.{FLAGS.seed}")
+    #agent.load(ckpt_dir, -60000)  # FLAGS.ckpt_step or FLAGS.max_steps
 
     eval_returns = []
     observation, done = env.reset(), False
@@ -155,6 +161,7 @@ def main(_):
                        smoothing=0.1,
                        disable=not FLAGS.tqdm):
         if i >= 1:
+            # print("hi")
             action = agent.sample_actions(observation, )
             action = np.clip(action, -1, 1)
             next_observation, reward, done, info = env.step(action)
@@ -169,8 +176,9 @@ def main(_):
 
             if done:
                 observation, done = env.reset(), False
-                for k, v in info['episode'].items():
-                    summary_writer.add_scalar(f'training/{k}', v, info['total']['timesteps'])
+                print(info)
+                # for k, v in info['episode'].items():
+                #     summary_writer.add_scalar(f'training/{k}', v, info['total']['timesteps'])
         else:
             info = {}
             info['total'] = {'timesteps': i}
@@ -185,24 +193,37 @@ def main(_):
         update_info = agent.update(batch)
 
         if i % FLAGS.log_interval == 0:
+            #print("hi2")
             for k, v in update_info.items():
                 if v.ndim == 0:
                     summary_writer.add_scalar(f'training/{k}', v, i)
                 else:
                     summary_writer.add_histogram(f'training/{k}', v, i)
             summary_writer.flush()
+    
+        if i % (10*FLAGS.log_interval) == 0:
+            ckpt_dir = os.path.join(FLAGS.save_dir, "ckpt", f"{FLAGS.run_name}.{FLAGS.seed}.{i}")
+            agent.save(ckpt_dir, i)
+                    #print("hi2")
+        
+    
+    ckpt_dir = os.path.join(FLAGS.save_dir, "ckpt", f"{FLAGS.run_name}.{FLAGS.seed}")
 
-        if i % FLAGS.eval_interval == 0:
-            eval_stats = evaluate(agent, env, FLAGS.eval_episodes)
+    agent.save(ckpt_dir, i)
+        
 
-            for k, v in eval_stats.items():
-                summary_writer.add_scalar(f'evaluation/average_{k}s', v, i)
-            summary_writer.flush()
+        # if i % FLAGS.eval_interval == 0:
+        #     print("hi3")
+        #     eval_stats = evaluate(agent, env, FLAGS.eval_episodes)
 
-            eval_returns.append((i, eval_stats['return']))
-            np.savetxt(os.path.join(FLAGS.save_dir, f'{FLAGS.seed}.txt'),
-                       eval_returns,
-                       fmt=['%d', '%.1f'])
+        #     for k, v in eval_stats.items():
+        #         summary_writer.add_scalar(f'evaluation/average_{k}s', v, i)
+        #     summary_writer.flush()
+
+        #     eval_returns.append((i, eval_stats['return']))
+        #     np.savetxt(os.path.join(FLAGS.save_dir, f'{FLAGS.seed}.txt'),
+        #                eval_returns,
+        #                fmt=['%d', '%.1f'])
 
     if FLAGS.wandb:
         wandb.finish()

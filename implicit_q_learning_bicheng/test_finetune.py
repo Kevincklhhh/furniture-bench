@@ -18,14 +18,13 @@ FLAGS = flags.FLAGS
 
 flags.DEFINE_string("env_name", "halfcheetah-expert-v2", "Environment name.")
 flags.DEFINE_string("save_dir", "./checkpoints/", "Tensorboard logging dir.")
-flags.DEFINE_string("run_name", "debug", "Run specific name")
+flags.DEFINE_string("run_name", "finetune", "Run specific name")
 flags.DEFINE_string("ckpt_step", None, "Specific checkpoint step")
 flags.DEFINE_string("randomness", "low", "Random mode")
 flags.DEFINE_integer("seed", 42, "Random seed.")
 flags.DEFINE_integer("eval_episodes", 10, "Number of episodes used for evaluation.")
 flags.DEFINE_integer("max_steps", int(1e6), "Number of training steps.")
 flags.DEFINE_integer("from_skill", int(0), "Skill to start from.")
-
 flags.DEFINE_integer("skill", int(-1), "Skill to evaluate.")
 flags.DEFINE_integer("high_random_idx", int(0), "High random idx.")
 
