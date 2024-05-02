@@ -18,4 +18,4 @@
 - imitation-juicer/src/evaluate_model.py
 - imitation-juicer/src/config/*.yaml
 - imitation-juicer/src/train/bc.py
-- - imitation-juicer/src/train/continue_bc.py
+- imitation-juicer/src/train/continue_bc.py
